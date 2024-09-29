@@ -69,7 +69,7 @@ void *resetHashmap(struct Hashmap *hmap, size_t keySize, const char *key, void *
     size_t h = hmap->hasher(keySize, key);
     size_t index = h % hmap->capacity;
     for (KVStack cell = hmap->cells[index]; cell; cell = cell->next)
-        if (keySize == cell->kv.keySize && strncmp(key, cell->kv.key, keySize)) {
+        if (keySize == cell->kv.keySize && strncmp(key, cell->kv.key, keySize) == 0) {
             void *oldValue = cell->kv.value;
             cell->kv.value = value;
             return oldValue;
@@ -107,7 +107,7 @@ void *popHashmap(struct Hashmap *hmap, size_t keySize, const char *key) {
 void *getHashmap(const struct Hashmap *hmap, size_t keySize, const char *key) {
     KVStack cell = hmap->cells[hmap->hasher(keySize, key) % hmap->capacity];
     KVStack *kvs = findKVStack(&cell, keySize, key);
-    if (kvs)
+    if (*kvs)
         return (*kvs)->kv.value;
     return NULL;
 }
