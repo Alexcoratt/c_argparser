@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     }
 
     for (int i = 0; i < argc; ++i) {
-        int *value = (int *)popHashmap(&map, strlen(argv[i]), argv[i]);
+        int *value = (int *)getHashmap(&map, strlen(argv[i]), argv[i]);
         if (value)
             printf("map[\"%s\"] = %d\n", argv[i], *value);
         else

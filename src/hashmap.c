@@ -104,7 +104,7 @@ void *popHashmap(struct Hashmap *hmap, size_t keySize, const char *key) {
     return kv.value;
 }
 
-void *getHashmap(struct Hashmap *hmap, size_t keySize, const char *key) {
+void *getHashmap(const struct Hashmap *hmap, size_t keySize, const char *key) {
     KVStack cell = hmap->cells[hmap->hasher(keySize, key) % hmap->capacity];
     KVStack *kvs = findKVStack(&cell, keySize, key);
     if (kvs)
