@@ -65,8 +65,6 @@ void destructHashmap(struct Hashmap *hmap) {
     free(hmap->cells);
 }
 
-void resizeHashmap(struct Hashmap *, size_t newCapacity);
-
 void *resetHashmap(struct Hashmap *hmap, size_t keySize, const char *key, void *value) {
     size_t h = hmap->hasher(keySize, key);
     size_t index = h % hmap->capacity;
@@ -93,8 +91,8 @@ void *resetHashmap(struct Hashmap *hmap, size_t keySize, const char *key, void *
 }
 
 void *popHashmap(struct Hashmap *hmap, size_t keySize, const char *key) {
-    KVStack cell = hmap->cells[hmap->hasher(keySize, key) % hmap->capacity];
-    KVStack *kvs = findKVStack(&cell, keySize, key);
+    KVStack *cellptr = hmap->cells + (hmap->hasher(keySize, key) % hmap->capacity);
+    KVStack *kvs = findKVStack(cellptr, keySize, key);
     if (!kvs)
         return NULL;
 
@@ -106,25 +104,13 @@ void *popHashmap(struct Hashmap *hmap, size_t keySize, const char *key) {
     return kv.value;
 }
 
-void **getHashmap(struct Hashmap *hmap, size_t keySize, const char *key) {
-    size_t index = hmap->hasher(keySize, key) % hmap->capacity;
-    KVStack *res = findKVStack(hmap->cells + index, keySize, key);
-    if (res)
-        return &(*res)->kv.value;
+void *getHashmap(struct Hashmap *hmap, size_t keySize, const char *key) {
+    KVStack cell = hmap->cells[hmap->hasher(keySize, key) % hmap->capacity];
+    KVStack *kvs = findKVStack(&cell, keySize, key);
+    if (kvs)
+        return (*kvs)->kv.value;
     return NULL;
 }
-
-// auxillary functions
-
-// TODO: Improve the default hash function
-size_t defaultHash(size_t size, const char *value) {
-    size_t res = 0;
-    for (size_t i = 0; i < size; ++i)
-        res += i * value[i];
-    return res;
-}
-
-void defaultDelete(void *value) {}
 
 void resizeHashmap(struct Hashmap *hmap, size_t newCapacity) {
     KVStack *newCells = calloc(newCapacity, sizeof(KVStack));
@@ -141,3 +127,15 @@ void resizeHashmap(struct Hashmap *hmap, size_t newCapacity) {
     free(hmap->cells);
     hmap->cells = newCells;
 }
+
+// auxillary functions
+
+// TODO: Improve the default hash function
+size_t defaultHash(size_t size, const char *value) {
+    size_t res = 0;
+    for (size_t i = 0; i < size; ++i)
+        res += i * value[i];
+    return res;
+}
+
+void defaultDelete(void *value) {}

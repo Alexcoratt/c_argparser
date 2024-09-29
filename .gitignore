@@ -6,3 +6,6 @@ vgcore.*
 
 # clangd compile commands
 compile_commands.json
+
+# cache
+.cache

@@ -21,15 +21,13 @@ struct Hashmap {
 
 // if hash_func or delete_func is set NULL the default function is used
 void initHashmap(struct Hashmap *, size_t capacity, hash_func, delete_func);
-
 void destructHashmap(struct Hashmap *);
 
 // returns the old value of the key (if it is a new key returns NULL)
 void *resetHashmap(struct Hashmap *, size_t keySize, const char *key, void *value);
 void *popHashmap(struct Hashmap *, size_t keySize, const char *key);
+void *getHashmap(struct Hashmap *, size_t keySize, const char *key);
 
-// returns pointer to the value if the key exists otherwise returns NULL
-void **getHashmap(struct Hashmap *, size_t keySize, const char *key);
-void *getConstHashmap(const struct Hashmap *, size_t keySize, const char *key); // not ready yet
+void resizeHashmap(struct Hashmap *, size_t newCapacity);
 
 #endif
