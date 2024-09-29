@@ -23,6 +23,8 @@ struct DynValue {
     union __DynValue value;
 };
 
+void parseDynValue(struct DynValue *, const char *);
+
 void initDynValue(struct DynValue *, enum ValueType);
 void destructDynValue(struct DynValue *);
 
