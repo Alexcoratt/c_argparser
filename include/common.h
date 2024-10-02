@@ -14,4 +14,7 @@ typedef void delete_func(void *);
 
 void defaultDelete(void *value);
 
+// auxillary methods
+char *allocString(const char *);
+
 #endif

@@ -7,8 +7,8 @@ BUILD_DIR ?= build
 main: mk_build_dir
 	${CC} ${CFLAGS} -o ${BUILD_DIR}/main ${SOURCE_DIR}/main.c
 
-hashmap_test: hashmap
-	${CC} ${CFLAGS} -o ${BUILD_DIR}/hashmap_test ${SOURCE_DIR}/hashmap_test.c ${BUILD_DIR}/hashmap.o
+hashmap_test: hashmap common
+	${CC} ${CFLAGS} -o ${BUILD_DIR}/hashmap_test ${SOURCE_DIR}/hashmap_test.c ${BUILD_DIR}/hashmap.o ${BUILD_DIR}/common.o
 
 hashmap: mk_build_dir
 	${CC} ${CFLAGS} -c -o ${BUILD_DIR}/hashmap.o ${SOURCE_DIR}/hashmap.c
@@ -28,11 +28,14 @@ argparser_test: argparser queue hashmap
 argparser: mk_build_dir
 	${CC} ${CFLAGS} -c -o ${BUILD_DIR}/argparser.o ${SOURCE_DIR}/argparser.c
 
-queue_test: queue
+queue_test: queue common
 	${CC} ${CFLAGS} -o ${BUILD_DIR}/queue_test ${SOURCE_DIR}/queue_test.c ${BUILD_DIR}/queue.o ${BUILD_DIR}/common.o
 
 queue: mk_build_dir
 	${CC} ${CFLAGS} -c -o ${BUILD_DIR}/queue.o ${SOURCE_DIR}/queue.c
+
+common:
+	${CC} ${CFLAGS} -c -o ${BUILD_DIR}/common.o ${SOURCE_DIR}/common.c
 
 mk_build_dir:
 	if [ ! -d ${BUILD_DIR} ]; then mkdir ${BUILD_DIR}; fi
