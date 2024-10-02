@@ -3,11 +3,10 @@
 
 #include "queue.h"
 
-void initQueue(struct Queue *q, size_t typeSize, alloc_func *alloc, delete_func *delete) {
+void initQueue(struct Queue *q, alloc_func *alloc, delete_func *delete) {
     q->last = q->first = NULL;
-    q->typeSize = typeSize;
 
-    q->alloc = alloc ? alloc : defaultAlloc;
+    q->alloc = alloc;
     q->delete = delete ? delete : defaultDelete;
 }
 
@@ -22,8 +21,7 @@ void destructQueue(struct Queue *q) {
 
 void pushQueue(struct Queue *q, const void *value) {
     struct SingleList *newItem = T_MALLOC(struct SingleList);
-    newItem->value = q->alloc(q->typeSize);
-    memcpy(newItem->value, value, q->typeSize);
+    newItem->value = q->alloc(value);
     newItem->next = NULL;
 
     if (!q->last)
@@ -50,4 +48,9 @@ size_t sizeQueue(const struct Queue *q) {
 
 bool isEmptyQueue(const struct Queue *q) {
     return q->last == NULL;
+}
+
+void traverseQueue(const struct Queue *q, queue_traverse_func *func) {
+    for (struct SingleList *iter = q->first; iter; iter = iter->next)
+        func(iter->value);
 }

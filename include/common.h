@@ -6,10 +6,12 @@
 #define T_MALLOC(TYPE) (TYPE *)malloc(sizeof(TYPE))
 #define T_CALLOC(TYPE, COUNT) (TYPE *)calloc(COUNT, sizeof(TYPE))
 
-typedef void *alloc_func(size_t typeSize);
+// value is an optional parameter
+// if set the function returns a pointer
+// to the copy of given value
+typedef void *alloc_func(const void *value);
 typedef void delete_func(void *);
 
-alloc_func defaultAlloc;
-delete_func defaultDelete;
+void defaultDelete(void *value);
 
 #endif
