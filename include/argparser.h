@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include "hashmap.h"
-#include "stack.h"
+#include "queue.h"
 
 enum Status {
     STATUS_SUCCESS,
@@ -15,9 +15,13 @@ enum Status {
 };
 
 struct ParseResult {
-    stack args; // stack of char * (taken from argv)
-    struct Hashmap flagArgs; // flag arguments (keys and values are taken from argv)
+    struct Queue args; // queue of char *
+    struct Queue flags; // queue of char *
+    struct Hashmap params;
 };
+
+void initParseResults(struct ParseResult *);
+void destructParseResults(struct ParseResult *);
 
 /* <config> has to be a hashmap where keys are flags
  * and values are bools containing if the flag takes
