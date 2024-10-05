@@ -1,26 +1,26 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include "single_list.h"
+#include "simple_stack.h"
 #include "common.h"
 
 struct Stack {
-    struct SingleList *first;
+    sstack first;
 
-    alloc_func *alloc;
-    del_func *del;
+    alloc_func alloc;
+    del_func del;
 };
 
-void initStack(struct Stack *, alloc_func *, del_func *);
-void destructStack(struct Stack *);
+void stack_init(struct Stack *, alloc_func, del_func);
+void stack_free(struct Stack *);
 
-void pushStack(struct Stack *, const void *value);
-void *popStack(struct Stack *);
+void stack_push(struct Stack *, const void *value);
+void *stack_pop(struct Stack *);
 
-size_t sizeStack(const struct Stack *);
-bool isEmptyStack(const struct Stack *);
+size_t stack_size(const struct Stack *);
+bool is_stack_empty(const struct Stack *);
 
 // auxillary functions
-void traverseStack(struct Stack *, single_list_traverse_func *);
+void stack_traverse(struct Stack *, sstack_traverse_func);
 
 #endif

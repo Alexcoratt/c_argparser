@@ -2,7 +2,7 @@
 #include <string.h>
 #include "common.h"
 
-void defaultDelete(void *ptr) {
+void defaultDel(void *ptr) {
     free(ptr);
 }
 

@@ -1,27 +1,27 @@
 #ifndef QUEUE_H
 #define QUEUE_H
 
-#include "single_list.h"
+#include "simple_stack.h"
 #include "common.h"
 
 struct Queue {
-    struct SingleList *first;   // first to go out
-    struct SingleList *last;    // last went in
+    sstack first;   // first to go out
+    sstack last;    // last went in
 
-    alloc_func *alloc;
-    del_func *del;
+    alloc_func alloc;
+    del_func del;
 };
 
-void initQueue(struct Queue *, alloc_func *, del_func *);
-void destructQueue(struct Queue *);
+void queue_init(struct Queue *, alloc_func, del_func);
+void queue_free(struct Queue *);
 
-void pushQueue(struct Queue *, const void *value);
-void *popQueue(struct Queue *);
+void queue_push(struct Queue *, const void *value);
+void *queue_pop(struct Queue *);
 
-size_t sizeQueue(const struct Queue *);
-bool isEmptyQueue(const struct Queue *);
+size_t queue_size(const struct Queue *);
+bool is_queue_empty(const struct Queue *);
 
 // auxillary functions
-void traverseQueue(const struct Queue *, single_list_traverse_func *);
+void queue_traverse(const struct Queue *, sstack_traverse_func);
 
 #endif

@@ -1,56 +1,39 @@
-#include <stdlib.h>
-#include <string.h>
-
 #include "queue.h"
+#include "simple_stack.h"
 
-void initQueue(struct Queue *q, alloc_func *alloc, delete_func *delete) {
+void queue_init(struct Queue *q, alloc_func alloc, del_func del) {
     q->last = q->first = NULL;
-
     q->alloc = alloc;
-    q->delete = delete ? delete : defaultDelete;
+    q->del = del ? del : defaultDel;
 }
 
-void destructQueue(struct Queue *q) {
-    while (q->first) {
-        q->delete(q->first->value);
-        struct SingleList *next = q->first->next;
-        free(q->first);
-        q->first = next;
-    }
+void queue_free(struct Queue *q) {
+    while (q->first != EMPTY_SSTACK)
+        q->del(sstack_pop(&q->first));
 }
 
-void pushQueue(struct Queue *q, const void *value) {
-    struct SingleList *newItem = T_MALLOC(struct SingleList);
-    newItem->value = q->alloc(value);
-    newItem->next = NULL;
-
-    if (!q->last)
+void queue_push(struct Queue *q, const void *value) {
+    sstack newItem = initSingleListPtr(q->alloc(value), NULL);
+    if (q->first == EMPTY_SSTACK)
         q->first = q->last = newItem;
     else
         q->last = q->last->next = newItem;
 }
 
-void *popQueue(struct Queue *q) {
-    void *res = q->first->value;
-    struct SingleList *second = q->first->next;
-    free(q->first);
-    q->first = second;
-    if (!second)
-        q->last = NULL;
-    return res;
+void *queue_pop(struct Queue *q) {
+    if (q->first == q->last)
+        q->last = EMPTY_SSTACK;
+    return sstack_pop(&q->first);
 }
 
-size_t sizeQueue(const struct Queue *q) {
-    size_t size = 0;
-    for (const struct SingleList *slptr = q->first; slptr; slptr = slptr->next, ++size);
-    return size;
+size_t queue_size(const struct Queue *q) {
+    return sstack_size(q->first);
 }
 
-bool isEmptyQueue(const struct Queue *q) {
-    return q->last == NULL;
+bool is_queue_empty(const struct Queue *q) {
+    return q->first == EMPTY_SSTACK;
 }
 
-void traverseQueue(const struct Queue *q, queue_traverse_func *func) {
-    for (struct SingleList *iter = q->first; iter; iter = iter->next)
-        func(iter->value);
+void queue_traverse(const struct Queue *q, sstack_traverse_func func) {
+    sstack_traverse(q->first, func);
 }

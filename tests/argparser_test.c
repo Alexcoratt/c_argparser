@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     }
 
     for (int i = 0; pres.args; ++i)
-        printf("arg #%d = %s\n", i, (char *)popStack(&pres.args));
+        printf("arg #%d = %s\n", i, (char *)stack_pop(&pres.args));
 
     destructHashmap(&pres.flagArgs);
     destructHashmap(&conf);

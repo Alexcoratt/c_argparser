@@ -3,55 +3,36 @@
 
 #include "hashmap.h"
 #include "common.h"
-
-void pushKVStack(KVStack *kvs, struct KeyVal kv) {
-    KVStack newItem = T_MALLOC(struct KVSingleList);
-    newItem->kv = kv;
-    newItem->next = *kvs;
-    *kvs = newItem;
-}
-
-struct KeyVal popKVStack(KVStack *kvs) {
-    KVStack next = (*kvs)->next;
-    struct KeyVal res = (*kvs)->kv;
-    free(*kvs);
-    *kvs = next;
-    return res;
-}
-
-KVStack *findKVStack(KVStack *kvs, size_t keySize, const char *key) {
-    KVStack *res = kvs;
-    for (; *res && ((*res)->kv.keySize != keySize || strncmp((*res)->kv.key, key, keySize) != 0); res = &(*res)->next);
-    return res;
-}
+#include "simple_stack.h"
 
 // TODO: Improve the default hash function
-size_t defaultHash(size_t size, const char *value) {
+size_t defaultStrHash(const char *value) {
     size_t res = 0;
-    for (size_t i = 0; i < size; ++i)
-        res += i * value[i];
+    for (size_t i = 0; value; ++i, ++value)
+        res += i * (*value);
     return res;
 }
 
 // definitions of hashmap methods
-void initHashmap(struct Hashmap *hmap, size_t capacity, hash_func *hash, alloc_func *alloc, delete_func *delete) {
+void hm_init(struct Hashmap *hmap, size_t capacity, str_hash_func hash, alloc_func alloc, del_func del) {
     hmap->capacity = capacity;
     hmap->size = 0;
-    hmap->cells = T_CALLOC(KVStack, capacity);
+    hmap->cells = T_CALLOC(sstack, capacity);
 
-    hmap->hash = hash ? hash : defaultHash;
+    hmap->hash = hash ? hash : defaultStrHash;
 
     hmap->alloc = alloc;
-    hmap->delete = delete ? delete : defaultDelete;
+    hmap->del = del ? del : defaultDel;
 }
 
-void destructHashmap(struct Hashmap *hmap) {
+void hm_free(struct Hashmap *hmap) {
     for (size_t i = 0; i < hmap->capacity; ++i) {
-        KVStack *cell = hmap->cells + i;
+        sstack *cell = hmap->cells + i;
         while (*cell) {
-            struct KeyVal kv = popKVStack(cell);
-            free(kv.key);
-            hmap->delete(kv.value);
+            struct StringPair *sp = (struct StringPair *)sstack_pop(cell);
+            free(sp->key);
+            hmap->del(sp->value);
+            free(sp);
         }
     }
 
