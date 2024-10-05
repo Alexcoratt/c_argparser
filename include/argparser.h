@@ -8,25 +8,49 @@
 
 enum Status {
     STATUS_SUCCESS,
-
     STATUS_UNKNOWN_ERROR,
+
     STATUS_WRONG_FLAG,
-    STATUS_NO_FLAG_ARGUMENT
+    STATUS_NO_FLAG_ARGUMENT,
+    STATUS_WRONG_ARGUMENT_COUNT
 };
 
-struct ParseResult {
+struct ParsingResult {
     struct Queue args; // queue of char *
     struct Queue flags; // queue of char *
     struct Hashmap params;
 };
 
-void initParseResults(struct ParseResult *);
-void freeParseResults(struct ParseResult *);
+void initParsingResult(struct ParsingResult *);
+void freeParsingResult(struct ParsingResult *);
 
-/* <config> has to be a hashmap where keys are flags
- * and values are bools containing if the flag takes
- * an argument
- */
-enum Status parseArgs(size_t argc, char **argv, const struct Hashmap *config, struct ParseResult *pres);
+typedef bool (*is_acceptable_arg_count_func)(size_t argCount);
+
+struct Config {
+    // arg count is normal if true returned
+    is_acceptable_arg_count_func acf;
+
+    /* 
+    * argRequired has to be a hashmap where keys are flags
+    * and values are bools containing if the flag takes
+    * an argument
+    */
+    struct Hashmap argRequired;
+};
+
+bool *allocBool(bool *val);
+
+void initConfig(
+    struct Config *,
+    is_acceptable_arg_count_func acf,
+
+    size_t flagCount,
+    char **flags,
+    bool *argRequired
+);
+
+void freeConfing(struct Config *);
+
+enum Status parseArgs(const struct Config *conf, struct ParsingResult *pres, size_t argc, char **argv);
 
 #endif
