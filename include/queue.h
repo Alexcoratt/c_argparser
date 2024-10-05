@@ -1,23 +1,18 @@
-#ifndef STACK_H
-#define STACK_H
+#ifndef QUEUE_H
+#define QUEUE_H
 
-#include <stdbool.h>
+#include "single_list.h"
 #include "common.h"
-
-struct SingleList {
-    void *value;
-    struct SingleList *next;
-};
 
 struct Queue {
     struct SingleList *first;   // first to go out
     struct SingleList *last;    // last went in
 
     alloc_func *alloc;
-    delete_func *delete;
+    del_func *del;
 };
 
-void initQueue(struct Queue *, alloc_func *, delete_func *);
+void initQueue(struct Queue *, alloc_func *, del_func *);
 void destructQueue(struct Queue *);
 
 void pushQueue(struct Queue *, const void *value);
@@ -27,7 +22,6 @@ size_t sizeQueue(const struct Queue *);
 bool isEmptyQueue(const struct Queue *);
 
 // auxillary functions
-typedef void queue_traverse_func(void *);
-void traverseQueue(const struct Queue *, queue_traverse_func *);
+void traverseQueue(const struct Queue *, single_list_traverse_func *);
 
 #endif

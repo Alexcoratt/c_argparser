@@ -10,7 +10,7 @@
 // if set the function returns a pointer
 // to the copy of given value
 typedef void *alloc_func(const void *value);
-typedef void delete_func(void *);
+typedef void del_func(void *);
 
 void defaultDelete(void *value);
 
