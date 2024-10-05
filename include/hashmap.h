@@ -13,11 +13,11 @@ struct StringPair {
     void *value;
 };
 
-struct StringPair *allocStringPair(const struct StringPair *);
+struct StringPair *initStringPairPtr(char *key, void *value);
 void freeStringPair(struct StringPair *);
 
 // hashmap definitions
-typedef size_t (* str_hash_func)(const char *);
+typedef size_t (*str_hash_func)(const char *);
 size_t defaultStrHash(const char *);
 
 struct Hashmap {
@@ -43,7 +43,7 @@ void **hm_get(const struct Hashmap *, const char *key);
 void hm_resize(struct Hashmap *, size_t newCapacity);
 
 // auxillary methods
-typedef void (* hm_traverse_func)(size_t keySize, char *key, void *value);
+typedef void (* hm_traverse_func)(char *key, void *value);
 void hm_traverse(const struct Hashmap *, hm_traverse_func);
 
 #endif

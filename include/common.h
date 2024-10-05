@@ -2,6 +2,7 @@
 #define BASIC_DEF_H
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #define T_MALLOC(TYPE) (TYPE *)malloc(sizeof(TYPE))
 #define T_CALLOC(TYPE, COUNT) (TYPE *)calloc(COUNT, sizeof(TYPE))
@@ -16,5 +17,8 @@ void defaultDel(void *value);
 
 // auxillary methods
 char *allocString(const char *);
+void freeString(char *);
+
+bool eqStrings(const char *, const char *);
 
 #endif

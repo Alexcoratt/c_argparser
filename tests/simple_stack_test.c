@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "common.h"
 #include "simple_stack.h"
 
 int counter = 0;
@@ -16,6 +17,12 @@ int main(int argc, char **argv) {
 
     counter = argc - 1;
     sstack_traverse(ss, (sstack_traverse_func)printArg);
+
+    sstack *found = sstack_find(&ss, "test", (eq_func)eqStrings);
+    if (*found)
+        printf("found: %s\n", (char *)sstack_pop(found));
+    else
+        puts("not found");
 
     while (ss != EMPTY_SSTACK)
         sstack_pop(&ss);

@@ -5,11 +5,23 @@
 #include "common.h"
 #include "simple_stack.h"
 
+// string pair methods definitions
+struct StringPair *initStringPairPtr(char *key, void *value) {
+    struct StringPair *res = T_MALLOC(struct StringPair);
+    res->key = key;
+    res->value = value;
+    return res;
+}
+
+void freeStringPair(struct StringPair *sp) {
+    free(sp);
+}
+
 // TODO: Improve the default hash function
 size_t defaultStrHash(const char *value) {
     size_t res = 0;
-    for (size_t i = 0; value; ++i, ++value)
-        res += i * (*value);
+    for (size_t i = 0; *value; ++i, ++value)
+        res += (i + 1) * (*value);
     return res;
 }
 
@@ -30,70 +42,62 @@ void hm_free(struct Hashmap *hmap) {
         sstack *cell = hmap->cells + i;
         while (*cell) {
             struct StringPair *sp = (struct StringPair *)sstack_pop(cell);
-            free(sp->key);
             hmap->del(sp->value);
-            free(sp);
+            freeString(sp->key);
+            freeStringPair(sp);
         }
     }
 
     free(hmap->cells);
 }
 
-void *resetHashmap(struct Hashmap *hmap, size_t keySize, const char *key, const void *value) {
-    size_t h = hmap->hash(keySize, key);
+void hm_set(struct Hashmap *hmap, const char *key, const void *value) {
+    size_t h = hmap->hash(key);
     size_t index = h % hmap->capacity;
-    for (KVStack cell = hmap->cells[index]; cell; cell = cell->next)
-        if (keySize == cell->kv.keySize && strncmp(key, cell->kv.key, keySize) == 0) {
-            void *oldValue = cell->kv.value;
-            cell->kv.value = hmap->alloc(value);
-            return oldValue;
-        }
+
+    sstack found = *sstack_find(hmap->cells + index, key, (eq_func)eqStrings);
+    if (found) {
+        hmap->del(found->value);
+        found->value = hmap->alloc(value);
+        return;
+    }
 
     if (hmap->size + 1 > hmap->capacity) {
-        resizeHashmap(hmap, hmap->capacity * 2);
+        hm_resize(hmap, hmap->capacity * 2);
         index = h % hmap->capacity;
     }
 
-    struct KeyVal kv = {keySize, malloc(keySize), hmap->alloc(value)};
-    memcpy(kv.key, key, keySize);
-    pushKVStack(hmap->cells + index, kv);
-
+    sstack_push(hmap->cells + index, initStringPairPtr(allocString(key), hmap->alloc(value)));
     ++(hmap->size);
+}
 
+void hm_erase(struct Hashmap *hmap, const char *key) {
+    sstack *found = sstack_find(hmap->cells + (hmap->hash(key) % hmap->capacity), key, (eq_func)eqStrings);
+    if (*found) {
+        struct StringPair *sp = (struct StringPair *)sstack_pop(found);
+        hmap->del(sp->value);
+        freeString(sp->key);
+        freeStringPair(sp);
+        --(hmap->size);
+    }
+}
+
+void **hm_get(const struct Hashmap *hmap, const char *key) {
+    sstack *found = sstack_find(hmap->cells + hmap->hash(key) % hmap->capacity, key, (eq_func)eqStrings);
+    if (*found)
+        return &(*found)->value;
     return NULL;
 }
 
-void *popHashmap(struct Hashmap *hmap, size_t keySize, const char *key) {
-    KVStack *cellptr = hmap->cells + (hmap->hash(keySize, key) % hmap->capacity);
-    KVStack *kvs = findKVStack(cellptr, keySize, key);
-    if (!kvs)
-        return NULL;
-
-    struct KeyVal kv = popKVStack(kvs);
-    free(kv.key);
-    
-    --(hmap->size);
-
-    return kv.value;
-}
-
-void *getHashmap(const struct Hashmap *hmap, size_t keySize, const char *key) {
-    KVStack cell = hmap->cells[hmap->hash(keySize, key) % hmap->capacity];
-    KVStack *kvs = findKVStack(&cell, keySize, key);
-    if (*kvs)
-        return (*kvs)->kv.value;
-    return NULL;
-}
-
-void resizeHashmap(struct Hashmap *hmap, size_t newCapacity) {
-    KVStack *newCells = calloc(newCapacity, sizeof(KVStack));
+void hm_resize(struct Hashmap *hmap, size_t newCapacity) {
+    sstack *newCells = T_CALLOC(sstack, newCapacity);
 
     for (size_t i = 0; i < hmap->capacity; ++i) {
-        KVStack cell = hmap->cells[i];
-        while (cell) {
-            struct KeyVal kv = popKVStack(&cell);
-            size_t index = hmap->hash(kv.keySize, kv.key) % newCapacity;
-            pushKVStack(newCells + index, kv);
+        sstack *cell = hmap->cells + i;
+        while (*cell) {
+            struct StringPair *sp = (struct StringPair *)sstack_pop(cell);
+            size_t index = hmap->hash(sp->key) % newCapacity;
+            sstack_push(newCells + index, sp);
         }
     }
 
@@ -101,8 +105,13 @@ void resizeHashmap(struct Hashmap *hmap, size_t newCapacity) {
     hmap->cells = newCells;
 }
 
-void traverseHashmap(const struct Hashmap *hmap, hashmap_traverse_func *func) {
+static hm_traverse_func trav_func = NULL;
+static void pair_stack_func(struct StringPair *sp) {
+    trav_func(sp->key, sp->value);
+}
+
+void hm_traverse(const struct Hashmap *hmap, hm_traverse_func func) {
+    trav_func = func;
     for (size_t i = 0; i < hmap->capacity; ++i)
-        for (KVStack iter = hmap->cells[i]; iter; iter = iter->next)
-            func(iter->kv.keySize, iter->kv.key, iter->kv.value);
+        sstack_traverse(hmap->cells[i], (sstack_traverse_func)pair_stack_func);
 }

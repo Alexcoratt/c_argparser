@@ -40,8 +40,8 @@ argparser: mk_build_dir
 
 
 # ------ Tests -------
-simple_stack_test: simple_stack
-	${CC} ${CFLAGS} -o ${BUILD_DIR}/simple_stack_test ${TEST_DIR}/simple_stack_test.c ${BUILD_DIR}/simple_stack.o
+simple_stack_test: simple_stack common
+	${CC} ${CFLAGS} -o ${BUILD_DIR}/simple_stack_test ${TEST_DIR}/simple_stack_test.c ${BUILD_DIR}/simple_stack.o ${BUILD_DIR}/common.o
 
 stack_test: stack common simple_stack
 	${CC} ${CFLAGS} -o ${BUILD_DIR}/stack_test ${TEST_DIR}/stack_test.c ${BUILD_DIR}/stack.o ${BUILD_DIR}/common.o ${BUILD_DIR}/simple_stack.o
@@ -49,8 +49,8 @@ stack_test: stack common simple_stack
 queue_test: queue common simple_stack
 	${CC} ${CFLAGS} -o ${BUILD_DIR}/queue_test ${TEST_DIR}/queue_test.c ${BUILD_DIR}/queue.o ${BUILD_DIR}/common.o ${BUILD_DIR}/simple_stack.o
 
-hashmap_test: hashmap common
-	${CC} ${CFLAGS} -o ${BUILD_DIR}/hashmap_test ${TEST_DIR}/hashmap_test.c ${BUILD_DIR}/hashmap.o ${BUILD_DIR}/common.o
+hashmap_test: hashmap common simple_stack
+	${CC} ${CFLAGS} -o ${BUILD_DIR}/hashmap_test ${TEST_DIR}/hashmap_test.c ${BUILD_DIR}/hashmap.o ${BUILD_DIR}/common.o ${BUILD_DIR}/simple_stack.o
 
 dynvalue_test: dynvalue print_dynvalue
 	${CC} ${CFLAGS} -o ${BUILD_DIR}/dynvalue_test ${TEST_DIR}/dynvalue_test.c ${BUILD_DIR}/dynvalue.o ${BUILD_DIR}/print_dynvalue.o  -lm

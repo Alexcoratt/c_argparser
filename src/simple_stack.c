@@ -38,3 +38,8 @@ size_t sstack_size(sstack ss) {
 void sstack_traverse(sstack ss, sstack_traverse_func func) {
     for (; ss; func(ss->value), ss = ss->next);
 }
+
+sstack *sstack_find(sstack *ss, const void *example, eq_func eq) {
+    for (; *ss != EMPTY_SSTACK && !eq((*ss)->value, example); ss = &(*ss)->next);
+    return ss;
+}
