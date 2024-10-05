@@ -25,7 +25,7 @@ size_t sstack_size(sstack);
 typedef void (*sstack_traverse_func)(void *);
 void sstack_traverse(sstack, sstack_traverse_func);
 
-typedef bool (*eq_func)(const void *, const void *);
+typedef bool (*eq_func)(const void *example, const void *stack_value);
 sstack *sstack_find(sstack *, const void *example, eq_func);
 
 #endif

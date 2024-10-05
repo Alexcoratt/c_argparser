@@ -1,5 +1,4 @@
 #include "queue.h"
-#include "simple_stack.h"
 
 void queue_init(struct Queue *q, alloc_func alloc, del_func del) {
     q->last = q->first = NULL;

@@ -1,41 +1,61 @@
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
 
 #include "argparser.h"
+#include "common.h"
 #include "hashmap.h"
-#include "stack.h"
 
-#define INIT_HASHMAP_CAPACITY 8
+bool *allocBool(bool *val) {
+    bool *res = T_MALLOC(bool);
+    if (val)
+        *res = *val;
+    return res;
+}
 
-void setConfig(struct Hashmap *conf, size_t keyCount, char **keys, bool *hasArgs) {
+struct Hashmap mkConfig(size_t keyCount, const char **keys, const bool *hasArgs) {
+    struct Hashmap conf;
+    hm_init(&conf, keyCount, NULL, (alloc_func)allocBool, NULL);
     for (size_t i = 0; i < keyCount; ++i)
-        resetHashmap(conf, strlen(keys[i]), keys[i], hasArgs + i);
+        hm_set(&conf, keys[i], hasArgs + i);
+    return conf;
+}
+
+int counter = 0;
+void printIndexString(const char *str) {
+    printf("\tvalue #%d = %s\n", counter++, str);
+}
+
+void printStringPair(const char *key, const char *value) {
+    printf("\t[%s] = %s\n", key, value);
 }
 
 int main(int argc, char **argv) {
     struct ParseResult pres;
-    pres.args = EMPTY_STACK;
-    initHashmap(&pres.flagArgs, INIT_HASHMAP_CAPACITY, NULL, NULL);
+    initParseResults(&pres);
 
-    char *keys[] = {"help", "t", "u", "cap"};
-    bool hasArgs[] = {false, true, false, true};
+    const char *keys[] = {"help", "t", "u", "cap"};
+    const bool hasArgs[] = {false, true, false, true};
 
-    struct Hashmap conf;
-    initHashmap(&conf, INIT_HASHMAP_CAPACITY, NULL, NULL);
-    setConfig(&conf, 4, keys, hasArgs);
+    struct Hashmap conf = mkConfig(4, keys, hasArgs);
+    enum Status s = parseArgs(argc, argv, &conf, &pres);
+    hm_free(&conf);
 
-    parseArgs(argc, argv, &conf, &pres);
-
-    for (int i = 0; i < 4; ++i) {
-        char *value = (char *)getHashmap(&pres.flagArgs, strlen(keys[i]), keys[i]);
-        printf("flags[%s] = %s\n", keys[i], value ? value : "NULL");
+    if (s != STATUS_SUCCESS) {
+        fprintf(stderr, "Error occured while processing flags. Error code: %d\n", s);
+        freeParseResults(&pres);
+        return s;
     }
 
-    for (int i = 0; pres.args; ++i)
-        printf("arg #%d = %s\n", i, (char *)stack_pop(&pres.args));
+    puts("args:");
+    queue_traverse(&pres.args, (sstack_traverse_func)printIndexString);
 
-    destructHashmap(&pres.flagArgs);
-    destructHashmap(&conf);
+    puts("\nflags:");
+    queue_traverse(&pres.flags, (sstack_traverse_func)printIndexString);
+
+    puts("\nparams:");
+    hm_traverse(&pres.params, (hm_traverse_func)printStringPair);
+
+    freeParseResults(&pres);
 
     return 0;
 }

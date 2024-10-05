@@ -40,6 +40,6 @@ void sstack_traverse(sstack ss, sstack_traverse_func func) {
 }
 
 sstack *sstack_find(sstack *ss, const void *example, eq_func eq) {
-    for (; *ss != EMPTY_SSTACK && !eq((*ss)->value, example); ss = &(*ss)->next);
+    for (; *ss != EMPTY_SSTACK && !eq(example, (*ss)->value); ss = &(*ss)->next);
     return ss;
 }

@@ -3,7 +3,6 @@
 
 #include "hashmap.h"
 #include "common.h"
-#include "simple_stack.h"
 
 // string pair methods definitions
 struct StringPair *initStringPairPtr(char *key, void *value) {
@@ -51,14 +50,19 @@ void hm_free(struct Hashmap *hmap) {
     free(hmap->cells);
 }
 
+bool keyEqual(const char *key, const struct StringPair *sp) {
+    return eqStrings(key, sp->key);
+}
+
 void hm_set(struct Hashmap *hmap, const char *key, const void *value) {
     size_t h = hmap->hash(key);
     size_t index = h % hmap->capacity;
 
-    sstack found = *sstack_find(hmap->cells + index, key, (eq_func)eqStrings);
+    sstack found = *sstack_find(hmap->cells + index, key, (eq_func)keyEqual);
     if (found) {
-        hmap->del(found->value);
-        found->value = hmap->alloc(value);
+        struct StringPair *sp = (struct StringPair *)found->value;
+        hmap->del(sp->value);
+        sp->value = hmap->alloc(value);
         return;
     }
 
@@ -72,7 +76,7 @@ void hm_set(struct Hashmap *hmap, const char *key, const void *value) {
 }
 
 void hm_erase(struct Hashmap *hmap, const char *key) {
-    sstack *found = sstack_find(hmap->cells + (hmap->hash(key) % hmap->capacity), key, (eq_func)eqStrings);
+    sstack *found = sstack_find(hmap->cells + (hmap->hash(key) % hmap->capacity), key, (eq_func)keyEqual);
     if (*found) {
         struct StringPair *sp = (struct StringPair *)sstack_pop(found);
         hmap->del(sp->value);
@@ -83,9 +87,9 @@ void hm_erase(struct Hashmap *hmap, const char *key) {
 }
 
 void **hm_get(const struct Hashmap *hmap, const char *key) {
-    sstack *found = sstack_find(hmap->cells + hmap->hash(key) % hmap->capacity, key, (eq_func)eqStrings);
-    if (*found)
-        return &(*found)->value;
+    sstack found = *sstack_find(hmap->cells + hmap->hash(key) % hmap->capacity, key, (eq_func)keyEqual);
+    if (found)
+        return &((struct StringPair *)found->value)->value;
     return NULL;
 }
 

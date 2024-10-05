@@ -21,7 +21,7 @@ struct ParseResult {
 };
 
 void initParseResults(struct ParseResult *);
-void destructParseResults(struct ParseResult *);
+void freeParseResults(struct ParseResult *);
 
 /* <config> has to be a hashmap where keys are flags
  * and values are bools containing if the flag takes
