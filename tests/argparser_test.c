@@ -43,5 +43,5 @@ int main(int argc, char **argv) {
 
     freeParsingResult(&pres);
 
-    return 0;
+    return s;
 }

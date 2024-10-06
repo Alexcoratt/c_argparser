@@ -34,26 +34,30 @@ bool *allocBool(bool *val) {
 }
 
 // Used for setting argument of a flag (if it takes one)
-static enum Status processFlag(const struct Hashmap *config, struct ParsingResult *pres, const char **keyToAssign, const char *key) {
+static enum Status processFlag(const struct Hashmap *config, struct ParsingResult *pres, char **keyToAssign, const char *key) {
     bool **hasArg = (bool **)hm_get(config, key);
     if (!hasArg || !*hasArg)
         return STATUS_WRONG_FLAG;
 
-    if (**hasArg)
-        *keyToAssign = key;
-    else
+    if (**hasArg) {
+        if (*keyToAssign)
+            return STATUS_CONFLICTING_FLAGS;
+        else
+            *keyToAssign = allocString(key);
+    } else
         queue_push(&pres->flags, key);
 
     return STATUS_SUCCESS;
 }
 
 enum Status parseArgs(const struct Hashmap *conf, struct ParsingResult *pres, size_t argc, char **argv) {
-    const char *keyToAssign = NULL;
+    char *keyToAssign = NULL;
     for (size_t i = 0; i < argc; ++i) {
         char *arg = argv[i];
 
         if (keyToAssign) {
             hm_set(&pres->params, keyToAssign, arg);
+            freeString(keyToAssign);
             keyToAssign = NULL;
         } else if (arg[0] == '-') {
             if (arg[1] == '-') {
@@ -72,8 +76,10 @@ enum Status parseArgs(const struct Hashmap *conf, struct ParsingResult *pres, si
             queue_push(&pres->args, arg);
     }
 
-    if (keyToAssign)
+    if (keyToAssign) {
+        freeString(keyToAssign);
         return STATUS_NO_FLAG_ARGUMENT;
+    }
 
     return STATUS_SUCCESS;
 }
