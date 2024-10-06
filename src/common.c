@@ -8,8 +8,8 @@ void defaultDel(void *ptr) {
 
 char *allocString(const char *str) {
     if (str)
-        return strcpy(malloc(strlen(str) + 1 * sizeof(char)), str);
-    return calloc(1, sizeof(char));
+        return strcpy((char *)malloc(strlen(str) + 1 * sizeof(char)), str);
+    return T_CALLOC(char, 1);
 }
 
 void freeString(char *str) {
