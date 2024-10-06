@@ -18,7 +18,7 @@ void freeParsingResult(struct ParsingResult *pres) {
 }
 
 // configuration hashmap methods' definitions
-void setConfig(struct Hashmap *conf, size_t flagCount, char **flags, bool *argRequired) {
+void setConfig(struct Hashmap *conf, size_t flagCount, const char **flags, const bool *argRequired) {
     conf->alloc = (alloc_func)allocBool;
     conf->del = defaultDel;
 

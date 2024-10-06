@@ -30,7 +30,7 @@ bool *allocBool(bool *val);
 // config has to be initialized before calling setConfig
 // sets config's allocator to allocBool and deleter to defaultDel
 // also fills config with given flags and bool flags
-void setConfig(struct Hashmap *config, size_t flagCount, char **flags, bool *argRequired);
+void setConfig(struct Hashmap *config, size_t flagCount, const char **flags, const bool *argRequired);
 /* 
  * config has to be a hashmap where keys are flags
  * and values are bools containing if the flag takes

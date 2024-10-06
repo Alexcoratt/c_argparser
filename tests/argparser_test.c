@@ -16,8 +16,8 @@ int main(int argc, char **argv) {
     struct ParsingResult pres;
     initParsingResult(&pres);
 
-    char *keys[] = {"help", "t", "u", "cap"};
-    bool argRequired[] = {false, true, false, true};
+    const char *keys[] = {"help", "t", "u", "cap"};
+    const bool argRequired[] = {false, true, false, true};
 
     struct Hashmap conf;
     hm_init(&conf, 4, NULL, NULL, NULL);
