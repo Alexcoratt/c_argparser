@@ -5,11 +5,14 @@ SOURCE_DIR ?= src
 BUILD_DIR ?= build
 TEST_DIR ?= tests
 
-PROJECT_NAME ?= argreader
+PROJECT_NAME ?= c_argparser
 
 # basic targets
 main: mk_build_dir
 	${CC} ${CFLAGS} -o ${BUILD_DIR}/${PROJECT_NAME} main.c
+
+lib: argparser
+	ar r ${BUILD_DIR}/lib${PROJECT_NAME}.a ${BUILD_DIR}/common.o ${BUILD_DIR}/argparser.o ${BUILD_DIR}/queue.o ${BUILD_DIR}/hashmap.o ${BUILD_DIR}/simple_stack.o
 
 mk_build_dir:
 	if [ ! -d ${BUILD_DIR} ]; then mkdir ${BUILD_DIR}; fi
@@ -43,6 +46,8 @@ argparser: hashmap queue
 	${CC} ${CFLAGS} -c -o ${BUILD_DIR}/argparser.o ${SOURCE_DIR}/argparser.c
 
 # ------ Tests -------
+tests: simple_stack_test stack_test queue_test hashmap_test dynvalue_test argparser_test
+
 simple_stack_test: simple_stack
 	${CC} ${CFLAGS} -o ${BUILD_DIR}/simple_stack_test ${TEST_DIR}/simple_stack_test.c ${BUILD_DIR}/simple_stack.o ${BUILD_DIR}/common.o
 
