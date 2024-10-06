@@ -24,33 +24,18 @@ struct ParsingResult {
 void initParsingResult(struct ParsingResult *);
 void freeParsingResult(struct ParsingResult *);
 
-typedef bool (*is_acceptable_arg_count_func)(size_t argCount);
-
-struct Config {
-    // arg count is normal if true returned
-    is_acceptable_arg_count_func acf;
-
-    /* 
-    * argRequired has to be a hashmap where keys are flags
-    * and values are bools containing if the flag takes
-    * an argument
-    */
-    struct Hashmap argRequired;
-};
-
 bool *allocBool(bool *val);
 
-void initConfig(
-    struct Config *,
-    is_acceptable_arg_count_func acf,
+// config has to be initialized before calling setConfig
+// sets config's allocator to allocBool and deleter to defaultDel
+// also fills config with given flags and bool flags
+void setConfig(struct Hashmap *config, size_t flagCount, char **flags, bool *argRequired);
+/* 
+ * config has to be a hashmap where keys are flags
+ * and values are bools containing if the flag takes
+ * an argument
+ */
 
-    size_t flagCount,
-    char **flags,
-    bool *argRequired
-);
-
-void freeConfing(struct Config *);
-
-enum Status parseArgs(const struct Config *conf, struct ParsingResult *pres, size_t argc, char **argv);
+enum Status parseArgs(const struct Hashmap *conf, struct ParsingResult *pres, size_t argc, char **argv);
 
 #endif

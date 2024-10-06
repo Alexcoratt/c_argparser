@@ -17,24 +17,13 @@ void freeParsingResult(struct ParsingResult *pres) {
     hm_free(&pres->params);
 }
 
-// struct Config methods' definitions
-void initConfig(
-    struct Config *conf,
-    is_acceptable_arg_count_func acf,
+// configuration hashmap methods' definitions
+void setConfig(struct Hashmap *conf, size_t flagCount, char **flags, bool *argRequired) {
+    conf->alloc = (alloc_func)allocBool;
+    conf->del = defaultDel;
 
-    size_t flagCount,
-    char **flags,
-    bool *argRequired
-) {
-    conf->acf = acf;
-
-    hm_init(&conf->argRequired, flagCount, NULL, (alloc_func)allocBool, NULL);
     for (size_t i = 0; i < flagCount; ++i)
-        hm_set(&conf->argRequired, flags[i], argRequired + i);
-}
-
-void freeConfing(struct Config *conf) {
-    hm_free(&conf->argRequired);
+        hm_set(conf, flags[i], argRequired + i);
 }
 
 bool *allocBool(bool *val) {
@@ -58,7 +47,7 @@ static enum Status processFlag(const struct Hashmap *config, struct ParsingResul
     return STATUS_SUCCESS;
 }
 
-enum Status parseArgs(const struct Config *conf, struct ParsingResult *pres, size_t argc, char **argv) {
+enum Status parseArgs(const struct Hashmap *conf, struct ParsingResult *pres, size_t argc, char **argv) {
     const char *keyToAssign = NULL;
     for (size_t i = 0; i < argc; ++i) {
         char *arg = argv[i];
@@ -68,13 +57,13 @@ enum Status parseArgs(const struct Config *conf, struct ParsingResult *pres, siz
             keyToAssign = NULL;
         } else if (arg[0] == '-') {
             if (arg[1] == '-') {
-                enum Status s = processFlag(&conf->argRequired, pres, &keyToAssign, arg + 2);
+                enum Status s = processFlag(conf, pres, &keyToAssign, arg + 2);
                 if (s != STATUS_SUCCESS)
                     return s;
             } else {
                 for (char *flag = arg + 1; *flag; ++flag) {
                     char flag_str[] = {*flag, '\0'};
-                    enum Status s = processFlag(&conf->argRequired, pres, &keyToAssign, flag_str);
+                    enum Status s = processFlag(conf, pres, &keyToAssign, flag_str);
                     if (s != STATUS_SUCCESS)
                         return s;
                 }
@@ -85,9 +74,6 @@ enum Status parseArgs(const struct Config *conf, struct ParsingResult *pres, siz
 
     if (keyToAssign)
         return STATUS_NO_FLAG_ARGUMENT;
-
-    if (!conf->acf(queue_size(&pres->args)))
-        return STATUS_WRONG_ARGUMENT_COUNT;
 
     return STATUS_SUCCESS;
 }
